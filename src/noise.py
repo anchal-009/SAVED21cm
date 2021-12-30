@@ -11,27 +11,30 @@ class Noise:
     
     def thermLevel(self):
         noiselev = self.power/np.sqrt(self.deltaNu*pow(10, 6)*self.deltaT*3600)
-        grvec = np.random.randn(*noiselev.shape)
-        return noiselev, noiselev * grvec
+        return noiselev
+
+    def noiseRealz(self):
+        grvec = np.random.randn(*self.thermLevel().shape)
+        return self.thermLevel()*grvec
     
-    def covmat(self, noise):
+    def covmat(self):
         covmat = np.zeros(shape=(len(self.nu)*self.nLST*self.ants,
                                  len(self.nu)*self.nLST*self.ants))
         for i in range(len(self.nu)*self.nLST*self.ants):
-            covmat[i, i] = pow(noise[i], 2.0)
+            covmat[i, i] = pow(self.thermLevel()[i], 2.0)
         return covmat
 
-    def covmatInv(self, noise):
-        return self.invDiag(self.covmat(noise))
+    def covmatInv(self):
+        return self.invDiag(self.covmat())
     
-    def wgtTs(self, modset, opt, noise):
+    def wgtTs(self, modset, opt):
         if opt == '21':
             exp21 = np.identity(len(self.nu))
             exp21 = np.tile(exp21, (self.nLST*self.ants, 1))
-            covmat21Inv = np.matmul(exp21.T, self.mulDiag(self.covmatInv(noise), exp21))
+            covmat21Inv = np.matmul(exp21.T, self.mulDiag(self.covmatInv(), exp21))
             wgtTs = self.mulDiag(np.sqrt(covmat21Inv), modset)
         if opt == 'FG':
-            wgtTs = self.mulDiag(np.sqrt(self.covmatInv(noise)), modset)
+            wgtTs = self.mulDiag(np.sqrt(self.covmatInv()), modset)
         return wgtTs
         
     @staticmethod
