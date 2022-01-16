@@ -26,7 +26,7 @@ class Visual:
         self.ant = ant
         self.save = save
         if self.save:
-            if not os.path.exists('output'): os.mkdir('output')
+            if not os.path.exists('FigsOutput'): os.mkdir('FigsOutput')
         
     def plotModset(self, set, opt, n_curves=100):
         plt.figure(figsize=(6, 4))
@@ -42,7 +42,7 @@ class Visual:
         plt.xlim(50, 200)
         plt.xlabel(r'$\nu\ ({\rm MHz})$')
         plt.ylabel(r'$T_{\rm b}\ ({\rm K})$')
-        if self.save: plt.savefig('output/modeling%sSet.pdf'%opt, bbox_inches='tight')
+        if self.save: plt.savefig('FigsOutput/modeling%sSet.pdf'%opt, bbox_inches='tight')
         else: plt.show()
 
     def plotMockObs(self, y21, yFg, noise):
@@ -77,7 +77,7 @@ class Visual:
         plt.ticklabel_format(axis="y", style="sci", scilimits=(0,0))
         newlegend(fsize=6, col=len(self.ant))
         plt.xlim(50, 200)
-        if self.save: plt.savefig('output/mockObservation.pdf', bbox_inches='tight')
+        if self.save: plt.savefig('FigsOutput/mockObservation.pdf', bbox_inches='tight')
         else: plt.show()
 
     def plotBasis(self, basis, opt, n_curves=5):
@@ -98,7 +98,7 @@ class Visual:
         plt.xlim(50, 200)
         plt.xlabel(r'$\nu\ ({\rm MHz})$')
         plt.ylabel(r'$T_{\rm b}\ ({\rm K})$')
-        if self.save: plt.savefig('output/basis%s.pdf'%opt, bbox_inches='tight')
+        if self.save: plt.savefig('FigsOutput/basis%s.pdf'%opt, bbox_inches='tight')
         else: plt.show()
 
     def plotInfoGrid(self, file, modesFg, modes21):
@@ -120,7 +120,7 @@ class Visual:
         fmt.set_powerlimits((0, 0))
         cbar = plt.colorbar(aspect=30, format=fmt, extend='max', pad=0.02)
         cbar.set_label(r"$\delta^{T} C^{-1} \delta\ +\ 2\, (n_{b}^{\rm FG} + n_{b}^{21})$")
-        if self.save: plt.savefig('output/DICinfoGrid.pdf', bbox_inches='tight')
+        if self.save: plt.savefig('FigsOutput/DICinfoGrid.pdf', bbox_inches='tight')
         else: plt.show()
 
     def plotExtSignal(self, y21, recons21, sigma21):
@@ -135,5 +135,5 @@ class Visual:
         plt.xlim(50, 200)
         plt.xlabel(r'$\nu\ ({\rm MHz})$')
         plt.ylabel(r'$T_{\rm b}\ ({\rm K})$')
-        if self.save: plt.savefig('output/extracted21.pdf', bbox_inches='tight')
+        if self.save: plt.savefig('FigsOutput/extracted21.pdf', bbox_inches='tight')
         else: plt.show()

@@ -97,7 +97,7 @@ class Inputs:
         self.nLST = nLST
         self.ants = ants
     
-    def getExp21(self, modset, ind):
+    def getExp21(self, modset, ind=0):
         """This method returns one 21cm signal profile from the modelling set.
 
         Args:
@@ -113,7 +113,7 @@ class Inputs:
         y_x21 = np.matmul(exp21, y21)
         return y21, y_x21
     
-    def getFg(self, modset, ind):
+    def getFg(self, modset, ind=0):
         """This method returns one foreground spectra from the modelling set.
 
         Args:
