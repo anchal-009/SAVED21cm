@@ -15,7 +15,7 @@ mFg = models.getcFgmodset(file=set.pathFgTS, nLST=set.LST,
 
 ''' Generating inputs from the modelling sets '''
 inputs = Inputs(nu=set.nu, nLST=set.LST, ants=set.ANTS)
-y21, y_x21 = inputs.getExp21(modset=m21, ind=0)
+y21, y_x21 = inputs.getExp21(modset=m21, ind=1000)
 yFg = inputs.getFg(modset=mFg, ind=0)
 
 ''' Generating the noise and getting its covariance '''
