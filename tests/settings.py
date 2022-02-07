@@ -5,12 +5,12 @@ path21TS = './../../../Projects/REACH-svd/Data/TS-21/lfcal_training_set_8-2020.h
 pathFgTS = './../../../Projects/REACH-svd/Data/TS-FG/Foreground-training-set-haslam-beta-const-'
 
 LST = 2
-ANT = ['logspiral']
+ANT = ['dipole', 'logspiral']
 ANTS = len(ANT)
 dNU = 1. 
 dT = 6
 nModesFg = 50
-nModes21 = 50
+nModes21 = 80
 VISUALS = True
 SAVE = True
 FNAME = './dic_search.txt'
