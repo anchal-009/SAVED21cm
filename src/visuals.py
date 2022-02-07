@@ -3,6 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib
+import math
 
 font = {'weight': 'normal', 'size': 12}
 matplotlib.rcParams['font.family'] = 'STIXGeneral'
@@ -15,8 +16,18 @@ def newlegend(col=1, fsize=12):
               if l not in labels[:i]]
     plt.gca().legend(*zip(*unique), fontsize=fsize, ncol=int(col))
 
-def get_cmap(n, name='jet'):
+def get_cmap(n, name='brg'):
     return plt.cm.get_cmap(name, n)
+
+def lighten_color(color, amount=0.5):
+    import matplotlib.colors as mc
+    import colorsys
+    try:
+        c = mc.cnames[color]
+    except:
+        c = color
+    c = colorsys.rgb_to_hls(*mc.to_rgb(c))
+    return colorsys.hls_to_rgb(c[0], 1 - amount * (1 - c[1]), c[2])
 
 
 class Visual:
@@ -29,6 +40,13 @@ class Visual:
             if not os.path.exists('FigsOutput'): os.mkdir('FigsOutput')
         
     def plotModset(self, set, opt, n_curves=100):
+        """This function plots the modeling set.
+
+        Args:
+            set (array): Modeling set
+            opt (string): '21' or 'FG'
+            n_curves (int, optional): Number of curves to plot. Defaults to 100.
+        """
         plt.figure(figsize=(6, 4))
         if opt == '21':
             plt.plot(self.nu, set.T[:, :n_curves], lw=0.2)
@@ -46,6 +64,13 @@ class Visual:
         else: plt.show()
 
     def plotMockObs(self, y21, yFg, noise):
+        """This function plots the mock observation.
+
+        Args:
+            y21 (array): Input 21cm component
+            yFg (array): Input beam-weighted foreground component
+            noise (array): Noise realization
+        """
         plt.figure(figsize=(13, 3.5))
         plt.subplot(131)
         plt.plot(self.nu, y21, label=r'$y_{21}$', c='k')
@@ -81,6 +106,13 @@ class Visual:
         else: plt.show()
 
     def plotBasis(self, basis, opt, n_curves=5):
+        """This function plots the basis functions.
+
+        Args:
+            basis (array): Basis functions (or modes)
+            opt (string): '21' or 'FG'
+            n_curves (int, optional): Number of modes to plot. Defaults to 5.
+        """
         plt.figure(figsize=(6, 4))
         cmap = get_cmap(n_curves)
         if opt == '21':
@@ -102,6 +134,13 @@ class Visual:
         else: plt.show()
 
     def plotInfoGrid(self, file, modesFg, modes21):
+        """This function plots the information criteria estimated on a grid.
+
+        Args:
+            file (string): Filename that contains the gridded information
+            modesFg (int): Number of foreground modes 
+            modes21 (int): Number of 21cm modes
+        """
         modesFg = np.linspace(1, modesFg, num=modesFg)
         modes21 = np.linspace(1, modes21, num=modes21)
 
@@ -124,6 +163,13 @@ class Visual:
         else: plt.show()
 
     def plotExtSignal(self, y21, recons21, sigma21):
+        """This function plots the extracted 21cm signal with the input signal.
+
+        Args:
+            y21 (array): Input 21cm signal
+            recons21 (array): Reconstructed signal
+            sigma21 (array): 1 sigma interval
+        """
         plt.figure(figsize=(6, 4))
         plt.plot(self.nu, recons21[0:len(self.nu)], c='darkcyan',
                  label='Extracted 21cm signal')
@@ -137,3 +183,119 @@ class Visual:
         plt.ylabel(r'$T_{\rm b}\ ({\rm K})$')
         if self.save: plt.savefig('FigsOutput/extracted21.pdf', bbox_inches='tight')
         else: plt.show()
+
+    def plotBiasCDF(self, antNames, fnames, save=False):
+        """This function plots the CDF of the signal bias for an ensemble of mockobs.
+
+        Args:
+            antNames (list): Antennas   
+            fnames (list): Files
+            save (bool, optional): For saving the figure. Defaults to False.
+        """
+        plt.figure(figsize=(6, 4))
+        color = get_cmap(len(fnames))
+        lim = [0.68, 0.95]
+        text = self.getCDF(paths=fnames, ind=3, lim=lim, labels=antNames, color=color)
+        self.getTable(paths=fnames, labels=antNames, text=text, color=color)
+        self.plotChiCDF()
+        plt.xlabel(r"${\rm Signal\ bias\ statistic\ }(\varepsilon)$")
+        plt.ylabel(r"${\rm CDF}$")
+        plt.xlim(0, 4); plt.ylim(0, 1)
+        plt.legend(loc='upper left', fontsize=9)
+        if save: plt.savefig('FigsOutput/biasCDF_lst-%d.pdf'%self.nLST, bbox_inches='tight')
+        else: plt.show()
+        
+    def plotRmsCDF(self, antNames, fnames, save=False):
+        """This function plots the CDF of the rms uncertainty for an ensemble of mockobs.
+
+        Args:
+            antNames (list): Antennas
+            fnames (list): Files
+            save (bool, optional): For saving the figure. Defaults to False.
+        """
+        plt.figure(figsize=(6, 4))
+        color = get_cmap(len(fnames))
+        lim = [0.68, 0.95]
+        text = self.getCDF(paths=fnames, ind=5, lim=lim, labels=antNames, color=color)
+        self.getTable(paths=fnames, labels=antNames, text=text, color=color)
+        plt.xscale("log")
+        plt.ylim(0, 1); plt.xlim(1, pow(10, 3))
+        plt.legend(loc='upper left', fontsize=9)
+        plt.xlabel(r"${\rm RMS\ uncertainity\ }({\rm mK})$")
+        plt.ylabel(r"${\rm CDF}$")
+        if save: plt.savefig('FigsOutput/rmsCDF_lst-%d.pdf'%self.nLST, bbox_inches='tight')
+        else: plt.show()
+    
+    def plotNormD(self, antNames, fnames, save=False, bins=20):
+        """This function plots the norm Deviance for an ensemble of mockobs.
+
+        Args:
+            antNames (list): Antennas
+            fnames (list): Files
+            save (bool, optional): For saving the figure. Defaults to False.
+            bins (int, optional): Number of bins. Defaults to 20.
+        """
+        plt.figure(figsize=(6, 4))
+        color = get_cmap(len(fnames))
+        labels = antNames
+        paths = fnames
+        for i in range(len(paths)):
+            f = np.loadtxt("%s"%paths[i])
+            weights = np.ones_like(f[:,4])/float(len(f[:,4]))
+            plt.hist(f[:,4], weights=weights, bins=bins, histtype='step', label=labels[i],
+                     color=color(i))
+        plt.xlim(0.5, 1.5)
+        plt.legend(loc='best')
+        plt.xlabel(r"$\chi^2$")
+        plt.ylabel(r"${\rm PDF}$")
+        plt.tight_layout()
+        if save: plt.savefig('FigsOutput/normDevPDF_lst-%d.pdf'%self.nLST, bbox_inches='tight')
+        else: plt.show()
+
+    @staticmethod
+    def getCDF(paths, ind, lim, labels, color):
+        text = np.zeros(shape=(len(paths), len(lim)))
+        for i in range(len(paths)):
+            f = np.loadtxt("%s"%paths[i])
+            values, base = np.histogram(f[:, ind], bins = 5000)
+            cumulative = np.cumsum(values)/np.sum(values)
+            for j in range(len(lim)):
+                total_ind = list(np.where(cumulative-lim[j]>=pow(10,-31)))
+                index = total_ind[0][0]
+                text[i][j] = "%.2f"%base[:-1][index]
+            plt.plot(base[:-1], cumulative, label = labels[i], color = color(i))     
+        plt.axhline(0.68, c = "lightgray", ls = ":")
+        plt.axhline(0.95, c = "lightgray", ls = "-.")   
+        return text
+
+    @staticmethod
+    def getTable(paths, labels, text, color):
+        cell_t = []
+        for i in range(len(paths)):
+            cell_t.append("%s" %labels[i])
+            cell_t.append("%.2f"%text[:,0][i])
+            cell_t.append("%.2f"%text[:,1][i])
+        ct = np.reshape(cell_t, (len(paths), 3))
+        cellC = []
+        for i in range(len(paths)):
+            cellC.append(lighten_color(color(i), 0.25))
+        cellcol = np.empty(shape=(len(paths), 3)).tolist()
+        for i in range(len(paths)):
+            for j in range(3):
+                cellcol[i][j] = cellC[i]
+        c_lab = (r"${\rm Observation}$", r"$68\%$", r"$95\%$")
+        the_table = plt.table(cellText=ct, colLabels=c_lab, cellLoc="center",
+                              colWidths=[0.32, 0.1, 0.1], cellColours=cellcol, loc = 4)
+        the_table.auto_set_font_size(False)
+        the_table.set_fontsize(9)
+
+    @staticmethod
+    def plotChiCDF():
+        pm = []; PM = []
+        ii = np.linspace(0, 100, 5000)
+        for jj in ii:
+            pm.append(np.sqrt(2/np.pi)*np.exp(-pow(jj,2.)/2))
+            PM.append(math.fsum(pm))
+        PM = PM/sum(pm)
+        plt.plot(ii, PM, c="k")
+        
