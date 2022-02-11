@@ -10,6 +10,6 @@ fnames = ['./StatsOutput/Stats_lst-2_ant-logspiral.txt',
           './StatsOutput/Stats_lst-2_ant-sinuous.txt',
           './StatsOutput/Stats_lst-2_ant-dipole-logspiral.txt']
 
-visual.plotBiasCDF(antNames=antNames, fnames=fnames, save=True)
-visual.plotNormD(antNames=antNames, fnames=fnames, save=True, bins=15)
-visual.plotRmsCDF(antNames=antNames, fnames=fnames, save=True)
+visual.plotBiasCDF(antNames=antNames, fnames=fnames, save=False)
+visual.plotNormD(antNames=antNames, fnames=fnames, save=False, bins=15)
+visual.plotRmsCDF(antNames=antNames, fnames=fnames, save=False)

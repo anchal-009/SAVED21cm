@@ -32,6 +32,14 @@ def lighten_color(color, amount=0.5):
 
 class Visual:
     def __init__(self, nu, nLST, ant, save=False):
+        """Initialize to generate the plots.
+
+        Args:
+            nu (array): Frequency range
+            nLST (int): Number of time bins to fit
+            ant (list): List of antenna designs
+            save (bool, optional): Option to save the plot. Defaults to False.
+        """
         self.nu = nu
         self.nLST = nLST
         self.ant = ant
@@ -40,7 +48,7 @@ class Visual:
             if not os.path.exists('FigsOutput'): os.mkdir('FigsOutput')
         
     def plotModset(self, set, opt, n_curves=100):
-        """This function plots the modeling set.
+        """Plots the modeling set.
 
         Args:
             set (array): Modeling set
@@ -64,7 +72,7 @@ class Visual:
         else: plt.show()
 
     def plotMockObs(self, y21, yFg, noise):
-        """This function plots the mock observation.
+        """Plots the mock observation.
 
         Args:
             y21 (array): Input 21cm component
@@ -106,7 +114,7 @@ class Visual:
         else: plt.show()
 
     def plotBasis(self, basis, opt, n_curves=5):
-        """This function plots the basis functions.
+        """Plots the basis functions.
 
         Args:
             basis (array): Basis functions (or modes)
@@ -134,7 +142,7 @@ class Visual:
         else: plt.show()
 
     def plotInfoGrid(self, file, modesFg, modes21):
-        """This function plots the information criteria estimated on a grid.
+        """Plots the information criteria estimated on a grid.
 
         Args:
             file (string): Filename that contains the gridded information
@@ -163,12 +171,12 @@ class Visual:
         else: plt.show()
 
     def plotExtSignal(self, y21, recons21, sigma21):
-        """This function plots the extracted 21cm signal with the input signal.
+        """Plots the extracted 21cm signal with the input signal.
 
         Args:
             y21 (array): Input 21cm signal
             recons21 (array): Reconstructed signal
-            sigma21 (array): 1 sigma interval
+            sigma21 (array): 1sigma interval
         """
         plt.figure(figsize=(6, 4))
         plt.plot(self.nu, recons21[0:len(self.nu)], c='darkcyan',
@@ -185,7 +193,7 @@ class Visual:
         else: plt.show()
 
     def plotBiasCDF(self, antNames, fnames, save=False):
-        """This function plots the CDF of the signal bias for an ensemble of mockobs.
+        """Plots the CDF of the signal bias for an ensemble of mockobs.
 
         Args:
             antNames (list): Antennas   
@@ -206,7 +214,7 @@ class Visual:
         else: plt.show()
         
     def plotRmsCDF(self, antNames, fnames, save=False):
-        """This function plots the CDF of the rms uncertainty for an ensemble of mockobs.
+        """Plots the CDF of the rms uncertainty for an ensemble of mockobs.
 
         Args:
             antNames (list): Antennas
@@ -227,7 +235,7 @@ class Visual:
         else: plt.show()
     
     def plotNormD(self, antNames, fnames, save=False, bins=20):
-        """This function plots the norm Deviance for an ensemble of mockobs.
+        """Plots the normalized Deviance for an ensemble of mockobs.
 
         Args:
             antNames (list): Antennas
@@ -291,11 +299,10 @@ class Visual:
 
     @staticmethod
     def plotChiCDF():
-        pm = []; PM = []
+        pm = []; pm2 = []
         ii = np.linspace(0, 100, 5000)
         for jj in ii:
             pm.append(np.sqrt(2/np.pi)*np.exp(-pow(jj,2.)/2))
-            PM.append(math.fsum(pm))
-        PM = PM/sum(pm)
-        plt.plot(ii, PM, c="k")
-        
+            pm2.append(math.fsum(pm))
+        pm2 = pm2/sum(pm)
+        plt.plot(ii, pm2, c="k")

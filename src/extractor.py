@@ -1,37 +1,44 @@
 import numpy as np
 
 class Extractor:
-    def __init__(self, nu, nLST, ants):
+    def __init__(self, nu, nLST, ant):
+        """Initialize extractor for isolating the 21cm signal.
+
+        Args:
+            nu (array): Frequency range
+            nLST (int): Number of time bins to fit
+            ant (list): List of antenna designs
+        """
         self.nu = nu
         self.nLST = nLST
-        self.ants = ants
+        self.ants = len(ant)
     
     def extract(self, modesFg, modes21, wgtBasisFg, wgtBasis21, covmatInv, mockObs, y21):
         """This method extracts the 21cm and foreground signals from the mock observation.
         It also calculates some statistical measures of the extracted signals.
 
         Args:
-            modesFg (int): number of foreground modes to fit (selected from min of IC)
-            modes21 (int): number of 21cm modes to fit (selected from min of IC)
-            wgtBasisFg (array): foreground modes
-            wgtBasis21 (array): 21cm modes
-            covmatInv (array): inverse of noise covariance matrix
-            mockObs (array): mock observation
-            y21 (array): input 21cm signal
+            modesFg (int): Number of foreground modes to fit (selected from min of IC)
+            modes21 (int): Number of 21cm modes to fit (selected from min of IC)
+            wgtBasisFg (array): Foreground basis
+            wgtBasis21 (array): 21cm basis
+            covmatInv (array): Inverse of noise covariance matrix
+            mockObs (array): Mock observation
+            y21 (array): Input 21cm signal
 
         Returns:
-            reconsFg: reconstructed foregrounds
-            recons21: reconstructed 21cm signal
+            reconsFg: Reconstructed foregrounds
+            recons21: Reconstructed 21cm signal
             sigmaFg: 1sigma interval on fitted foregrounds
             sigma21: 1sigma interval on fitted 21cm signal
-            channelCovFg: foregrounds channel covariance
+            channelCovFg: Foregrounds channel covariance
             channelCov21: 21cm signal channel covariance
-            rmsFg: rms of the fitted foregrounds
-            rms21: rms of the fitted 21cm signal
-            dic: minimized dic value
-            S: some covariance matrix
-            epsilon: signal bias statistics (to ensure the confidence levels)
-            D: normalized deviance (to ensure overfitting)
+            rmsFg: RMS of the fitted foregrounds
+            rms21: RMS of the fitted 21cm signal
+            dic: Minimized dic value
+            S: Some covariance matrix
+            epsilon: Signal bias statistics (to ensure the optimal confidence levels)
+            D: Normalized deviance (to ensure overfitting)
         """
         print('Extractor: Extracting the 21cm signal...', end='')    
         F_Fg = wgtBasisFg[:, 0:modesFg]

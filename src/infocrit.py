@@ -1,31 +1,30 @@
 import numpy as np
-from numpy.core.fromnumeric import shape
 
 class Dic:
-    def __init__(self, nu, nLST, ants):
-        """This class contains methods for minimizing Deviance Information Criterion (DIC).
+    def __init__(self, nu, nLST, ant):
+        """Initialize the Deviance Information Criterion (DIC).
 
         Args:
-            nu (array): frequency range
-            nLST (int): number of time bins to use in the analysis
-            ants (int): number of antenna designs
+            nu (array): Frequency range
+            nLST (int): Number of time bins to fit
+            ant (int): List of antenna designs
         """
         self.nu = nu
         self.nLST = nLST
-        self.ants = ants
+        self.ants = len(ant)
     
     def gridinfo(self, modesFg, modes21, wgtBasisFg, wgtBasis21, covmatInv, mockObs, file):
         """This method calculates the DIC over a grid of foreground and 21cm modes,
-        and save the data into a text file.
+        and saves the data in a text file.
 
         Args:
-            modesFg (int): number of foreground modes for the grid
-            modes21 (int): number of 21cm modes for the grid
-            wgtBasisFg (array): foreground modes
-            wgtBasis21 (array): 21cm modes
-            covmatInv (array): inverse of noise covariance matrix
-            mockObs (array): mock observation
-            file (string): filename to save the information
+            modesFg (int): Number of foreground modes for the grid
+            modes21 (int): Number of 21cm modes for the grid
+            wgtBasisFg (array): Foreground basis
+            wgtBasis21 (array): 21cm basis
+            covmatInv (array): Inverse of noise covariance matrix
+            mockObs (array): Mock observation
+            file (string): Filename to save the information
         """
         print('Info Criterion: Calculating info criterion over grid...', end='', flush=True)
         gridFg = np.linspace(1, modesFg, num=modesFg, dtype=int).tolist()
@@ -73,12 +72,12 @@ class Dic:
         from the gridded data.
 
         Args:
-            file (string): filename that contains the gridded IC data.
+            file (string): Filename that contains the gridded IC data.
 
         Returns:
-            int: number of foreground modes that minimize the IC
-                 number of 21cm modes that minimize the IC
-                 minimized IC value
+            int: Number of foreground modes that minimize the IC,
+                 Number of 21cm modes that minimize the IC,
+                 Minimized IC value
         """
         print('Info Critetion: Searching for minima over the grid...', end='', flush=True)
         data = np.loadtxt(file)

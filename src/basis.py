@@ -1,22 +1,29 @@
 import numpy as np
 
 class Basis:
-    def __init__(self, nu):
+    def __init__(self, nu, nLST, ant):
+        """Initialize basis for the foregrounds and 21cm signal.
+
+        Args:
+            nu (array): Frequency range
+            nLST (int): Number of time bins to fit
+            ant (list): List of antenna designs
+        """
         self.nu = nu
+        self.nLST = nLST
+        self.ant = ant
     
-    def wgtSVDbasis(self, modset, covmat, opt, nLST=1, ants=1):
+    def wgtSVDbasis(self, modset, covmat, opt):
         """This methods returns the noise covariance weighted modes obtained from
         the Singular Value Decomposition of the training sets.
 
         Args:
             modset (array): Modelling set
-            covmat (array): noise covariance matrix
-            opt (string): option to choose ('FG' or '21')
-            nLST (int, optional): number of time bins to use in the analysis. Defaults to 1.
-            ants (int, optional): number of antenna designs. Defaults to 1.
+            covmat (array): Noise covariance matrix
+            opt (string): Option to choose ('FG' or '21')
 
         Returns:
-            array: noise covariance weighted SVD modes
+            array: Noise covariance weighted SVD modes
         """
         print('Basis: Performing SVD of %s modelling set...'%opt, end='', flush=True)
         if opt == 'FG':
@@ -26,7 +33,7 @@ class Basis:
         if opt == '21':
             F, _, _ = np.linalg.svd(modset, full_matrices=False)
             exp21 = np.identity(len(self.nu))
-            exp21 = np.tile(exp21, (nLST*ants, 1))
+            exp21 = np.tile(exp21, (self.nLST*len(self.ant), 1))
             covmatInv = self.invDiag(covmat)
             covmat21Inv = np.matmul(exp21.T, self.mulDiag(covmatInv, exp21))
             covmat21 = self.invDiag(covmat21Inv)
@@ -39,10 +46,10 @@ class Basis:
         Singular Value Decomposition of the modelling set.
 
         Args:
-            modset (array): modelling set
+            modset (array): Modelling set
 
         Returns:
-            array: unweighted SVD modes
+            array: Unweighted SVD modes
         """
         F, _, _ = np.linalg.svd(modset, full_matrices=False)
         return F

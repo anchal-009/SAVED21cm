@@ -1,23 +1,48 @@
 import numpy as np
 
 class Noise:
-    def __init__(self, nu, nLST, ants, power, deltaNu, deltaT):
+    def __init__(self, nu, nLST, ant, power, deltaNu, deltaT):
+        """Initialize the thermal noise model.
+
+        Args:
+            nu (array): Frequency range
+            nLST (int): Number of time bins to fit
+            ant (list): List of antenna designs
+            power (array): Total power in (K)
+            deltaNu (int): Frequency channel width
+            deltaT (int): Integration time
+        """
         self.nu = nu
         self.nLST = nLST
-        self.ants = ants
+        self.ants = len(ant)
         self.power = power
         self.deltaNu = deltaNu
         self.deltaT = deltaT
     
     def thermLevel(self):
+        """Thermal noise level.
+
+        Returns:
+            array: Thermal noise level from Tb/sqrt(dNu*dT)
+        """
         noiselev = self.power/np.sqrt(self.deltaNu*pow(10, 6)*self.deltaT*3600)
         return noiselev
 
     def noiseRealz(self):
+        """Random realization of the noise.
+
+        Returns:
+            array: Random realization based on a given thermal noise level
+        """
         grvec = np.random.randn(*self.thermLevel().shape)
         return self.thermLevel()*grvec
     
     def covmat(self):
+        """Noise covariance matrix.
+
+        Returns:
+            array: Covariance matrix for noise
+        """
         covmat = np.zeros(shape=(len(self.nu)*self.nLST*self.ants,
                                  len(self.nu)*self.nLST*self.ants))
         for i in range(len(self.nu)*self.nLST*self.ants):
@@ -25,9 +50,23 @@ class Noise:
         return covmat
 
     def covmatInv(self):
+        """Inverse of noise covariance matrix.
+
+        Returns:
+            array: Inverse of noise covariance matrix
+        """
         return self.invDiag(self.covmat())
     
     def wgtTs(self, modset, opt):
+        """Noise covariance weighted modelling set.
+
+        Args:
+            modset (array): Modelling set
+            opt (string): Option to choose ('FG' or '21')
+
+        Returns:
+            array: Noise covariance weighted modelling set.
+        """
         if opt == '21':
             exp21 = np.identity(len(self.nu))
             exp21 = np.tile(exp21, (self.nLST*self.ants, 1))

@@ -9,5 +9,5 @@ statquants = StatQuants(nu=set.nu, nLST=set.LST, ant=set.ANT,
                         file=set.FNAME)
 
 statquants.getStats(fname='Stats_lst-%d_ant-%s.txt'%(set.LST, '-'.join(set.ANT)),
-                    iList21=np.linspace(0, 20_000, 100),
-                    iListFg=np.linspace(0, 100, 10))
+                    iList21=np.linspace(0, 20_000, 50),
+                    iListFg=np.linspace(0, 100, 5))

@@ -7,19 +7,21 @@ from src.infocrit import Dic
 from src.extractor import Extractor
 import settings as set
 
+''' Print the settings for the pipeline '''
+set.checkSettings()
+
 ''' Reading in the modelling sets '''
-models = Modset(nu=set.nu)
+models = Modset(nu=set.nu, nLST=set.LST, ant=set.ANT)
 m21 = models.get21modset(file=set.path21TS, nuMin=50, nuMax=200)
-mFg = models.getcFgmodset(file=set.pathFgTS, nLST=set.LST,
-                          nLST_tot=144, ant=set.ANT)
+mFg = models.getcFgmodset(file=set.pathFgTS, nLST_tot=144)
 
 ''' Generating inputs from the modelling sets '''
-inputs = Inputs(nu=set.nu, nLST=set.LST, ants=set.ANTS)
+inputs = Inputs(nu=set.nu, nLST=set.LST, ant=set.ANT)
 y21, y_x21 = inputs.getExp21(modset=m21, ind=1000)
 yFg = inputs.getFg(modset=mFg, ind=0)
 
 ''' Generating the noise and getting its covariance '''
-noise = Noise(nu=set.nu, nLST=set.LST, ants=set.ANTS, power=y_x21 + yFg,
+noise = Noise(nu=set.nu, nLST=set.LST, ant=set.ANT, power=y_x21 + yFg,
               deltaNu=set.dNU, deltaT=set.dT)
 realz = noise.noiseRealz()
 cmat = noise.covmat()
@@ -33,20 +35,19 @@ wgt_mFg = noise.wgtTs(modset=mFg.T, opt='FG')
 y = y_x21 + yFg + realz
 
 ''' Weighted SVD for getting the optimal modes '''
-basis = Basis(nu=set.nu)
-b21 = basis.wgtSVDbasis(modset=wgt_m21, covmat=cmat,
-                        nLST=set.LST, ants=set.ANTS, opt='21')
+basis = Basis(nu=set.nu, nLST=set.LST, ant=set.ANT)
+b21 = basis.wgtSVDbasis(modset=wgt_m21, covmat=cmat, opt='21')
 bFg = basis.wgtSVDbasis(modset=wgt_mFg, covmat=cmat, opt='FG')
 
 ''' Minimizing information criterion for selecting the number of modes '''
-d = Dic(nu=set.nu, nLST=set.LST, ants=set.ANTS)
+d = Dic(nu=set.nu, nLST=set.LST, ant=set.ANT)
 d.gridinfo(modesFg=set.nModesFg, modes21=set.nModes21,
            wgtBasisFg=bFg, wgtBasis21=b21,
            covmatInv=cmatInv, mockObs=y, file=set.FNAME)
 modesFg, modes21, dic = d.searchMinima(file=set.FNAME)
 
 ''' Finally extracting the signal! '''
-ext = Extractor(nu=set.nu, nLST=set.LST, ants=set.ANTS)
+ext = Extractor(nu=set.nu, nLST=set.LST, ant=set.ANT)
 _, e21, _, s21, *_ = ext.extract(modesFg=modesFg, modes21=modes21,
                                  wgtBasisFg=bFg, wgtBasis21=b21,
                                  covmatInv=cmatInv, mockObs=y, y21=y21)

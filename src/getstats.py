@@ -4,7 +4,7 @@ from src.basis import Basis
 from src.noise import Noise
 from src.infocrit import Dic
 from src.extractor import Extractor
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 class PipelineStat(Modset, Inputs, Basis, Noise, Dic, Extractor):
     def __init__(self, nu, nLST, ant, path21TS, pathFgTS,
@@ -13,7 +13,6 @@ class PipelineStat(Modset, Inputs, Basis, Noise, Dic, Extractor):
         self.nu = nu
         self.nLST = nLST
         self.ant = ant
-        self.ants = len(self.ant)
         self.path21TS = path21TS
         self.pathFgTS = pathFgTS
         self.dT = dT
@@ -25,17 +24,17 @@ class PipelineStat(Modset, Inputs, Basis, Noise, Dic, Extractor):
     
     def runPipeline(self):
         ''' Reading in the modelling sets '''
-        models = Modset(nu=self.nu)
+        models = Modset(nu=self.nu, nLST=self.nLST, ant=self.ant)
         m21 = models.get21modset(file=self.path21TS, nuMin=self.nu[0], nuMax=self.nu[-1])
-        mFg = models.getcFgmodset(file=self.pathFgTS, nLST=self.nLST, nLST_tot=144, ant=self.ant)
+        mFg = models.getcFgmodset(file=self.pathFgTS, nLST_tot=144)
         
         ''' Generating inputs from the modelling sets '''
-        inputs = Inputs(nu=self.nu, nLST=self.nLST, ants=self.ants)
+        inputs = Inputs(nu=self.nu, nLST=self.nLST, ant=self.ant)
         y21, y_x21 = inputs.getExp21(modset=m21, ind=self.ind21)
         yFg = inputs.getFg(modset=mFg, ind=self.indFg)
         
         ''' Generating the noise and getting its covariance '''
-        noise = Noise(nu=self.nu, nLST=self.nLST, ants=self.ants, power=y_x21+yFg,
+        noise = Noise(nu=self.nu, nLST=self.nLST, ant=self.ant, power=y_x21+yFg,
                       deltaNu=self.nu[1] - self.nu[0], deltaT=self.dT)
         thermRealz = noise.noiseRealz()        
         cmat = noise.covmat()
@@ -49,18 +48,18 @@ class PipelineStat(Modset, Inputs, Basis, Noise, Dic, Extractor):
         y = y_x21 + yFg + thermRealz
         
         ''' Weighted SVD for getting the optimal modes '''
-        basis = Basis(nu=self.nu)
-        b21 = basis.wgtSVDbasis(modset=wgt_m21, covmat=cmat,nLST=self.nLST, ants=self.ants, opt='21')
+        basis = Basis(nu=self.nu, nLST=self.nLST, ant=self.ant)
+        b21 = basis.wgtSVDbasis(modset=wgt_m21, covmat=cmat, opt='21')
         bFg = basis.wgtSVDbasis(modset=wgt_mFg, covmat=cmat, opt='FG')
         
         ''' Minimizing information criterion for selecting the number of modes '''
-        ic = Dic(nu=self.nu, nLST=self.nLST, ants=self.ants)
+        ic = Dic(nu=self.nu, nLST=self.nLST, ant=self.ant)
         ic.gridinfo(modesFg=self.modesFg, modes21=self.modes21, wgtBasis21=b21, wgtBasisFg=bFg,
                     covmatInv=cmatInv, mockObs=y, file=self.file)
         icmodesFg, icmodes21, _ = ic.searchMinima(file=self.file)
         
         ''' Finally extracting the signal! '''
-        ext = Extractor(nu=self.nu, nLST=self.nLST, ants=self.ants)
+        ext = Extractor(nu=self.nu, nLST=self.nLST, ant=self.ant)
         quants = ext.extract(modesFg=icmodesFg, modes21=icmodes21,
                              wgtBasisFg=bFg, wgtBasis21=b21,
                              covmatInv=cmatInv, mockObs=y, y21=y21)
@@ -83,10 +82,22 @@ class HiddenPrints:
 
 class StatQuants:
     def __init__(self, nu, nLST, ant, path21TS, pathFgTS, dT, modesFg, modes21, file):
+        """Initialize for generating some statistical measures of the fitting.
+
+        Args:
+            nu (array): Frequency range
+            nLST (int): Number of time bins to fit
+            ant (lsit): List of antenna designs
+            path21TS (string): Path to 21cm modelling set
+            pathFgTS (string): Path to foregrounds modelling set
+            dT (int): Integration time in hours
+            modesFg (int): Total number of FG modes
+            modes21 (int): Total number of 21 modes
+            file (string): Filename to store the gridded IC
+        """
         self.nu = nu
         self.nLST = nLST
         self.ant = ant
-        self.ants = len(self.ant)
         self.path21TS = path21TS
         self.pathFgTS = pathFgTS
         self.dT = dT
@@ -95,6 +106,14 @@ class StatQuants:
         self.file = file
         
     def getStats(self, fname, iList21, iListFg):
+        """Estimates the statistical measures over an ensemble of different foregrounds and 21cm
+        signals and store that information in a file.
+
+        Args:
+            fname (string): Filename to store the statistical information
+            iList21 (array): List of 21cm index to use as the input (from the modelling set)
+            iListFg (array): List of foreground index to use as the input (from the modelling set)
+        """
         print('--------------- Estimating statistical measures ---------------\n', flush=True)
         if not os.path.exists('StatsOutput/'):
             os.mkdir('StatsOutput/')

@@ -2,20 +2,26 @@ import numpy as np
 import h5py
 
 class Modset:
-    def __init__(self, nu):
-        """This class contains methods for reading in the modelling sets 
+    """This class contains methods for reading in the modelling sets 
         (foreground and 21cm signal) from our standard hdf5 files.
+    """
+    def __init__(self, nu, nLST, ant):
+        """Initialize the modelling sets (foreground and 21cm signal).
 
         Args:
             nu (array): Frequency range
+            nLST (int): Number of time bins to fit
+            ant (list): List of antenna designs
         """
         self.nu = nu
+        self.nLST = nLST
+        self.ant = ant
 
     def get21modset(self, file, nuMin, nuMax):
         """This method returns the 21cm signal modelling set.
 
         Args:
-            file (string): path to file
+            file (string): Path to file
             nuMin (float): Minimum frequency accessible
             nuMax (float): Maximum frequency accessible
 
@@ -36,12 +42,11 @@ class Modset:
         print('Done!')
         return mod21
 
-    def getFgmodset(self, file, nLST, nLST_tot):
+    def getFgmodset(self, file, nLST_tot):
         """This method returns the foreground modelling set of a specific antenna.
 
         Args:
-            file (string): path to file
-            nLST (int): Number of time bins to use in the analysis
+            file (string): Path to file
             nLST_tot (int): Total number of time bins in the set
 
         Returns:
@@ -53,49 +58,48 @@ class Modset:
             n_samp = modFgRaw.shape[0]
             modFgRaw = modFgRaw[:, 0*len(self.nu):nLST_tot*len(self.nu)]
             modFgRaw = modFgRaw.flatten()
-            modFgRaw = modFgRaw.reshape(n_samp*nLST*int(nLST_tot/nLST), len(self.nu))
-            modFg = np.zeros(shape=(n_samp*nLST, len(self.nu)))
+            modFgRaw = modFgRaw.reshape(n_samp*self.nLST*int(nLST_tot/self.nLST), len(self.nu))
+            modFg = np.zeros(shape=(n_samp*self.nLST, len(self.nu)))
             j = 0
-            for i in range(n_samp*nLST):
-                modFg[i, :] = np.sum(modFgRaw[j:j+int(nLST_tot/nLST), :],
-                                     axis=0)/int(nLST_tot/nLST)
-                j = j + int(nLST_tot/nLST)
-            modFg = modFg.reshape(n_samp, nLST*len(self.nu))
+            for i in range(n_samp*self.nLST):
+                modFg[i, :] = np.sum(modFgRaw[j:j+int(nLST_tot/self.nLST), :],
+                                     axis=0)/int(nLST_tot/self.nLST)
+                j = j + int(nLST_tot/self.nLST)
+            modFg = modFg.reshape(n_samp, self.nLST*len(self.nu))
         return modFg
     
-    def getcFgmodset(self, file, nLST, nLST_tot, ant):
+    def getcFgmodset(self, file, nLST_tot):
         """This method concatenates the foreground modelling set for multiple antennas.
 
         Args:
-            file (string): path to file
-            nLST (int): Number of time bins to use in the analysis
+            file (string): Path to file
             nLST_tot (int): Total number of time bins in the set
-            ant (list): List of antenna designs
 
         Returns:
             array: Concatenated foreground modelling set of shape
                    (n_curves, n_nu*n_t*n_ant)
         """
         print('Modelling set: Reading FG modelling set...', end='', flush=True)
-        mFg = np.concatenate(([Modset.getFgmodset(self, file='%s'%file+'%s'%ant[i]+'.h5',
-                                                   nLST=nLST, nLST_tot=nLST_tot)
-                               for i in range(len(ant))]), axis=-1)
+        mFg = np.concatenate(([Modset.getFgmodset(self, file='%s'%file+'%s'%self.ant[i]+'.h5', nLST_tot=nLST_tot)
+                               for i in range(len(self.ant))]), axis=-1)
         print('Done!')
         return mFg
 
 class Inputs:
-    def __init__(self, nu, nLST, ants):
-        """This class contains methods for getting the inputs (foreground and 21cm)
+    """This class contains methods for getting the inputs (foreground and 21cm)
         from their training set.
+    """
+    def __init__(self, nu, nLST, ant):
+        """Initialize the inputs (foreground and 21cm).
 
         Args:
             nu (array): Frequency range
-            nLST (int): Number of time bins to use in the analysis
-            ants (int): Number of antenna designs
+            nLST (int): Number of time bins to git
+            ant (list): List of antenna designs
         """
         self.nu = nu
         self.nLST = nLST
-        self.ants = ants
+        self.ants = len(ant)
     
     def getExp21(self, modset, ind=0):
         """This method returns one 21cm signal profile from the modelling set.
