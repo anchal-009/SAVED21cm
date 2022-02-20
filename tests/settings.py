@@ -1,27 +1,32 @@
 import numpy as np
 
-nu = np.linspace(50, 200, 151)
-path21TS = './../../../Projects/REACH-svd/Data/TS-21/lfcal_training_set_8-2020.hdf5'
-pathFgTS = './../../../Projects/REACH-svd/Data/TS-FG/Foreground-training-set-haslam-beta-const-'
+NU = np.linspace(50, 200, 151)      # Frequency Range
 
-LST = 2
-ANT = ['dipole', 'logspiral']
+PATH21TS = '/Users/anchal/Documents/SourceCodes/SAVED21cm/data/TS21/lfcal_training_set_8-2020.hdf5'
+PATHFGTS = '/Users/anchal/Documents/SourceCodes/SAVED21cm/data/TSFG/Foreground-training-set-haslam-beta-const-'
 
-dNU = 1. 
-dT = 6
-nModesFg = 50
-nModes21 = 80
-VISUALS = True
-SAVE = False
-FNAME = './dic_search.txt'
+LST = 2     # Number of time bins
+ANT = ['logspiral']  # Antenna designs: 'dipole', 'logspiral', 'sinuous'
+dNU = 1.    # Frequency channel width
+dT = 6      # Integration time in hour
+MODES_FG = 50     # Number of FG modes to search for min IC
+MODES_21 = 80     # Number of 21 modes to search for min IC
+QUANTITY = 'DIC'  # IC to minimize 'DIC' or 'BIC'
+VISUALS = True    # Option to plot figures
+SAVE = True      # Option to save figures
+FNAME = './%s_search.txt'%QUANTITY    # Filename of IC information
 
 def checkSettings():
-      print('------------------ Settings for the pipeline ------------------\n')
+      print('\n------------------ Settings for the pipeline ------------------\n')
       print('Frequencies: Between (%d - %d) MHz with step size of %d MHz.'
-            %(nu[0], nu[-1], nu[1] - nu[0]))
+            %(NU[0], NU[-1], NU[1] - NU[0]))
+      print(PATH21TS)
       print('Number of LST bins:', LST)
       print('Antenna Design:', ANT)
       print('Integration Time:', dT)
-      print('Total number of foreground modes:', nModesFg)
-      print('Total number of 21cm modes:', nModes21)
-      print('Filename to store the info criteria:', FNAME, '\n')
+      print('Total number of foreground modes:', MODES_FG)
+      print('Total number of 21cm modes:', MODES_21)
+      print('Information Criterion:', QUANTITY)
+      print('Filename to store the info criteria:', FNAME)
+      print('Visualization:', VISUALS)
+      print('Save figures:', SAVE, '\n')

@@ -1,6 +1,6 @@
 import numpy as np
 
-class Dic:
+class InfoCrit:
     def __init__(self, nu, nLST, ant):
         """Initialize the Deviance Information Criterion (DIC).
 
@@ -13,11 +13,14 @@ class Dic:
         self.nLST = nLST
         self.ants = len(ant)
     
-    def gridinfo(self, modesFg, modes21, wgtBasisFg, wgtBasis21, covmatInv, mockObs, file):
-        """This method calculates the DIC over a grid of foreground and 21cm modes,
+    def gridinfo(self, quantity, modesFg, modes21, wgtBasisFg, wgtBasis21, covmatInv, mockObs, file):
+        """This method calculates the IC over a grid of foreground and 21cm modes,
         and saves the data in a text file.
 
         Args:
+            quantity (string): Quantity to minimize\
+                               'DIC' for Deviance Information Criterion,\
+                               'BIC' for Bayesian Information Criterion
             modesFg (int): Number of foreground modes for the grid
             modes21 (int): Number of 21cm modes for the grid
             wgtBasisFg (array): Foreground basis
@@ -55,14 +58,18 @@ class Dic:
                 reconsObs = np.matmul(F, Xi)
                 diff = reconsObs - mockObs
                 
-                dic = np.matmul(diff.T, self.mulDiag(covmatInv, diff)) +\
-                    2 * (gridFg[i] + grid21[j])
+                if quantity == 'DIC':
+                    ic = np.matmul(diff.T, self.mulDiag(covmatInv, diff)) +\
+                        2 * (gridFg[i] + grid21[j])
+                if quantity == 'BIC':
+                    ic = np.matmul(diff.T, self.mulDiag(covmatInv, diff)) +\
+                        (gridFg[i] + grid21[j]) * np.log(len(self.nu))
                 
                 fp.write(str(gridFg[i]))
                 fp.write("\t")
                 fp.write(str(grid21[j]))
                 fp.write("\t")
-                fp.write(str(dic[0][0]))
+                fp.write(str(ic[0][0]))
                 fp.write("\n")
         fp.close()
         print('Done!')

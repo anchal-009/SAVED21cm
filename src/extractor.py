@@ -93,10 +93,10 @@ class Extractor:
             (len(self.nu) * self.nLST * self.ants - (modesFg + modes21))
         D = D[0][0]
         
-        print('Done!' + u'\U0001f604')
+        print('Done!')
         print('Extractor: RMS uncertainty = %.2f mK'%(rms21*epsilon[0]))
         print('Extractor: Signal Bias Statistic = %.2f'%epsilon[0])
-        print('Extractor: Normalized Deviance = %.2f'%D)
+        print('Extractor: Normalized Deviance = %.2f\n'%D)
         return reconsFg, recons21, sigmaFg, sigma21, channelCovFg, channelCov21,\
             rmsFg, rms21, dic, S, epsilon, D
 

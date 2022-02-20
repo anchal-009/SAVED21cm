@@ -2,14 +2,14 @@ import os
 from src.readset import Modset, Inputs
 from src.basis import Basis
 from src.noise import Noise
-from src.infocrit import Dic
+from src.infocrit import InfoCrit
 from src.extractor import Extractor
 from src.visuals import Visual
 
-class Pipeline(Modset, Inputs, Basis, Noise, Dic, Extractor):
+class Pipeline:   
     def __init__(self, nu, nLST, ant, path21TS, pathFgTS,
-                 dT=6, modesFg=50, modes21=80, file='test.txt',
-                 indexFg=0, index21=0):
+                 dT=6, modesFg=50, modes21=80, quantity='DIC', 
+                 file='test.txt', indexFg=0, index21=0, visual=False, save=False):
         """Initialize to run the pipeline with the given settings.
 
         Args:
@@ -21,9 +21,14 @@ class Pipeline(Modset, Inputs, Basis, Noise, Dic, Extractor):
             dT (int, optional): Integration time in hours. Defaults to 6.
             modesFg (int, optional): Total number of FG modes. Defaults to 50.
             modes21 (int, optional): Total number of 21 modes. Defaults to 80.
+            quantity (string): Quantity to minimize\
+                               'DIC' for Deviance Information Criterion,\
+                               'BIC' for Bayesian Information Criterion
             file (str, optional): Filename to store the gridded IC. Defaults to 'test.txt'.
             indexFg (int, optional): Index to get input from the FG modelling set. Defaults to 0.
             index21 (int, optional): Index to get input from the 21 modelling set. Defaults to 0.
+            visual (bool, optional): Option to plot the extracted signal. Defaults to False.
+            save (bool, optional): Option to save the figures. Defaults to False.
         """
         self.nu = nu
         self.nLST = nLST
@@ -33,9 +38,12 @@ class Pipeline(Modset, Inputs, Basis, Noise, Dic, Extractor):
         self.dT = dT
         self.modesFg = modesFg
         self.modes21 = modes21
+        self.quantity = quantity
         self.file = file
         self.indFg = indexFg
         self.ind21 = index21
+        self.visual = visual
+        self.save = save
     
     def runPipeline(self):
         """To run the pipeline.
@@ -71,20 +79,36 @@ class Pipeline(Modset, Inputs, Basis, Noise, Dic, Extractor):
         bFg = basis.wgtSVDbasis(modset=wgt_mFg, covmat=cmat, opt='FG')
         
         ''' Minimizing information criterion for selecting the number of modes '''
-        ic = Dic(nu=self.nu, nLST=self.nLST, ant=self.ant)
+        ic = InfoCrit(nu=self.nu, nLST=self.nLST, ant=self.ant)
         ic.gridinfo(modesFg=self.modesFg, modes21=self.modes21, wgtBasis21=b21, wgtBasisFg=bFg,
-                    covmatInv=cmatInv, mockObs=y, file=self.file)
+                    quantity=self.quantity, covmatInv=cmatInv, mockObs=y, file=self.file)
         icmodesFg, icmodes21, _ = ic.searchMinima(file=self.file)
         
         ''' Finally extracting the signal! '''
         ext = Extractor(nu=self.nu, nLST=self.nLST, ant=self.ant)
-        _, e21, _, s21, *_ = ext.extract(modesFg=icmodesFg, modes21=icmodes21,
-                                         wgtBasisFg=bFg, wgtBasis21=b21,
-                                         covmatInv=cmatInv, mockObs=y, y21=y21)
-
-        os.system('rm %s'%self.file)
+        extInfo = ext.extract(modesFg=icmodesFg, modes21=icmodes21,
+                              wgtBasisFg=bFg, wgtBasis21=b21,
+                              covmatInv=cmatInv, mockObs=y, y21=y21)
 
         ''' Visuals '''
-        vis = Visual(nu=self.nu, nLST=self.nLST, ant=self.ant)
-        vis.plotExtSignal(y21=y21, recons21=e21, sigma21=s21)
+        if self.visual:
+            vis = Visual(nu=self.nu, nLST=self.nLST, ant=self.ant, save=self.save)
+            vis.plotModset(set=m21, opt='21', n_curves=1000)
+            vis.plotModset(set=mFg, opt='FG', n_curves=100)
+            vis.plotMockObs(y21=y21, yFg=yFg, noise=thermRealz)
+            vis.plotBasis(basis=b21, opt='21')
+            vis.plotBasis(basis=bFg, opt='FG')
+            vis.plotInfoGrid(file=self.file, modesFg=self.modesFg, modes21=self.modes21,
+                            quantity=self.quantity, minModesFg=icmodesFg, minModes21=icmodes21)
+            vis.plotExtSignal(y21=y21, recons21=extInfo[1], sigma21=extInfo[3])
+        
+        os.system('rm %s'%self.file)
+        
+        ''' Statistical Measures '''
+        qDic = extInfo[8]
+        qBias = extInfo[10]
+        qNormD = extInfo[11]
+        qRms = extInfo[7] * qBias[0]
+        
+        return icmodesFg, icmodes21, qDic[0][0], qBias[0], qNormD, qRms
         
