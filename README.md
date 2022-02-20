@@ -6,5 +6,5 @@ In the evolutionary history of the universe, Cosmic Dawn (CD) and Epoch of Reion
 This is a global 21cm signal extraction pipeline, specifically build for the REACH experiment, but in principle can be utilized for any global 21cm experiment. Our formalism is based on a pattern recognition framework using the Singular Value Decomposition (SVD) of the 21cm and foreground training set. It allows us to find the patterns in the training sets and properly model the chromatic distortions with a better basis than the polynomials. In the figure below, we show the extraction of the 21cm signal from a simulated mock observation, following this formalism. 
 
 <p align="center">
-  <img src="./tests/FigsOutput/extracted21.svg">
+  <img src="./tests/FigsOutput/extract21_ant-dl_tbins-2.svg">
 </p>
