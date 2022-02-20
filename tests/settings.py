@@ -20,7 +20,6 @@ def checkSettings():
       print('\n------------------ Settings for the pipeline ------------------\n')
       print('Frequencies: Between (%d - %d) MHz with step size of %d MHz.'
             %(NU[0], NU[-1], NU[1] - NU[0]))
-      print(PATH21TS)
       print('Number of LST bins:', LST)
       print('Antenna Design:', ANT)
       print('Integration Time:', dT)
