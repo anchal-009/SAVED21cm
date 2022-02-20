@@ -1,15 +1,13 @@
 import sys; sys.path.insert(1, './../')
 from src.visuals import Visual
-import tests.settings as set
+import settings as set
 
-visual = Visual(nu=set.nu, nLST=2, ant=set.ANT)
+visual = Visual(nu=set.NU, nLST=set.LST, ant=set.ANT)
 
-antNames = ['Log-Spiral', 'Dipole', 'Sinuous', 'Dipole + Log-Spiral']
-fnames = ['./StatsOutput/Stats_lst-2_ant-logspiral.txt',
-          './StatsOutput/Stats_lst-2_ant-dipole.txt',
-          './StatsOutput/Stats_lst-2_ant-sinuous.txt',
-          './StatsOutput/Stats_lst-2_ant-dipole-logspiral.txt']
+antNames = [r'Dipole $(t_{\rm bin} = 1)$', r'Dipole $(t_{\rm bin} = 2)$']
+fnames = ['./StatsOutput/Stats_lst-1_ant-dipole_DIC.txt',
+          './StatsOutput/Stats_lst-2_ant-dipole_DIC.txt']
 
-visual.plotBiasCDF(antNames=antNames, fnames=fnames, save=False)
-visual.plotNormD(antNames=antNames, fnames=fnames, save=False, bins=15)
-visual.plotRmsCDF(antNames=antNames, fnames=fnames, save=False)
+visual.plotBiasCDF(antNames=antNames, fnames=fnames, xlim=[0, 10], save=False)
+visual.plotNormD(antNames=antNames, fnames=fnames, xlim=[0.5, 1.5], save=False)
+visual.plotRmsCDF(antNames=antNames, fnames=fnames, xlim=[1e0, 1e4], save=False)
