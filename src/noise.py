@@ -1,4 +1,5 @@
 import numpy as np
+np.random.seed(2)
 
 class Noise:
     def __init__(self, nu, nLST, ant, power, deltaNu, deltaT):
