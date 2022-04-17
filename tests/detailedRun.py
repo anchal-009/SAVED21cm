@@ -10,6 +10,7 @@ from src.extractor import Extractor
 import settings as set
 
 ''' Print the settings for the pipeline '''
+set.LST = 2
 set.checkSettings()
 
 ''' Reading in the modelling sets '''
@@ -19,7 +20,7 @@ mFg = models.getcFgmodset(file=set.PATHFGTS, nLST_tot=144)
 
 ''' Generating inputs from the modelling sets '''
 inputs = Inputs(nu=set.NU, nLST=set.LST, ant=set.ANT)
-y21, y_x21 = inputs.getExp21(modset=m21, ind=1000)
+y21, y_x21 = inputs.getExp21(modset=m21, ind=467)
 yFg = inputs.getFg(modset=mFg, ind=0)
 
 ''' Generating the noise and getting its covariance '''
@@ -30,8 +31,8 @@ cmat = noise.covmat()
 cmatInv = noise.covmatInv()
 
 ''' Getting the noise covariance weighted modelling sets '''
-wgt_m21 = noise.wgtTs(modset=m21.T, opt='21')
-wgt_mFg = noise.wgtTs(modset=mFg.T, opt='FG')
+wgt_m21 = noise.wgtTs(modset=m21, opt='21')
+wgt_mFg = noise.wgtTs(modset=mFg, opt='FG')
 
 ''' Generating the mock observation '''
 y = y_x21 + yFg + realz
