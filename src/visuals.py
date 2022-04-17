@@ -212,8 +212,8 @@ class Visual:
         plt.figure(figsize=(6, 4))
         plt.plot(self.nu, recons21[0:len(self.nu)], c='darkcyan',
                  label=r'$y_{21}^{\rm ext}$')
-        plt.fill_between(self.nu, recons21[0:len(self.nu)] - (0.4*sigma21),
-                        recons21[0:len(self.nu)] + (0.4*sigma21),
+        plt.fill_between(self.nu, recons21[0:len(self.nu)] - (1*sigma21),
+                        recons21[0:len(self.nu)] + (1*sigma21),
                         color="darkcyan", alpha=0.4)
         plt.plot(self.nu, y21, c='k', label=r'$y_{21}^{\rm inp}$')
         plt.legend()
