@@ -67,6 +67,50 @@ class Basis:
         F, _, _ = np.linalg.svd(modset, full_matrices=False)
         return F
 
+    def getOverlapFg(self, basis, cmatInv):
+        """Computes the overlap between foreground modes.
+
+        Args:
+            basis (array): foreground modes
+            cmatInv (array): noise covariance matrix
+
+        Returns:
+            array: matrix of overlap
+        """
+        overlapInfo = np.matmul(basis.T, self.mulDiag(cmatInv, basis))
+        return overlapInfo
+
+    def getOverlap21(self, basis, cmatInv):
+        """Computes the overlap between 21cm modes.
+
+        Args:
+            basis (array): 21cm modes
+            cmatInv (array): noise covariance matrix
+
+        Returns:
+            array: matrix of overlap
+        """
+        exp21 = np.identity(len(self.nu))
+        exp21 = np.tile(exp21, (self.nLST*len(self.ant), 1))
+        overlapInfo = np.matmul(basis.T, np.matmul(exp21.T, np.matmul(cmatInv, np.matmul(exp21, basis))))
+        return overlapInfo
+    
+    def getOverlapFg21(self, bFg, b21, cmatInv):
+        """Computes the overlap between foreground and 21cm modes.
+
+        Args:
+            bFg (array): foreground modes
+            b21 (array): 21cm modes
+            cmatInv (array): noise covariance matrix
+
+        Returns:
+            array: matrix of overlap
+        """
+        exp21 = np.identity(len(self.nu))
+        exp21 = np.tile(exp21, (self.nLST*len(self.ant), 1))
+        overlapInfo = np.matmul(bFg.T, np.matmul(cmatInv, np.matmul(exp21, b21)))
+        return overlapInfo
+    
     @staticmethod
     def mulDiag(A, B):
         return np.multiply(np.diag(A)[:, None], B)
