@@ -32,7 +32,7 @@ def lighten_color(color, amount=0.5):
     return colorsys.hls_to_rgb(c[0], 1 - amount * (1 - c[1]), c[2])
 
 class Visual:
-    def __init__(self, nu, nLST, ant, save=False):
+    def __init__(self, nu, nLST, ant, save=False, prefix="", index=["", ""]):
         """Initialize to generate the plots.
 
         Args:
@@ -45,6 +45,10 @@ class Visual:
         self.nLST = nLST
         self.ant = ant
         self.save = save
+        self.prefix = prefix
+        self.index = index
+        if self.index == ["", ""]: self.ind = ""
+        else: self.ind = "_iFg21-%d-%d"%(self.index[0], self.index[1])
         if self.save:
             if not os.path.exists('FigsOutput'): os.mkdir('FigsOutput')
     
@@ -61,11 +65,11 @@ class Visual:
         """
         plt.figure(figsize=(6, 4))
         if opt == '21':
-            plt.plot(self.nu, set.T[:, :n_curves], lw=0.2)
+            plt.plot(self.nu, set[:, :n_curves], lw=0.2)
         if opt == 'FG':
             cmap = get_cmap(self.nLST)
             for i in range(self.nLST):
-                plt.plot(self.nu, set.T[i*len(self.nu):(i+1)*len(self.nu), :n_curves],
+                plt.plot(self.nu, set[i*len(self.nu):(i+1)*len(self.nu), :n_curves],
                          c=cmap(i), label=r'$t_{%d}$'%(i+1), alpha=0.2, lw=0.8)
             plt.ticklabel_format(axis="y", style="sci", scilimits=(0,0))
             newlegend()
@@ -114,7 +118,8 @@ class Visual:
         plt.ticklabel_format(axis="y", style="sci", scilimits=(0,0))
         newlegend(fsize=4/len(self.ant)+6, col=len(self.ant))
         plt.xlim(50, 200)
-        if self.save: plt.savefig('FigsOutput/mockObs%s.pdf'%self.getSaveName(),
+        if self.save: plt.savefig('FigsOutput/%smockObs%s%s.pdf'
+                                  %(self.prefix, self.getSaveName(), self.ind),
                                   bbox_inches='tight')
         else: plt.show()
 
@@ -130,14 +135,18 @@ class Visual:
         cmap = get_cmap(n_curves)
         if opt == '21':
             for i in range(n_curves):
-                plt.plot(self.nu, basis.T[i], c=cmap(i),
+                # plt.plot(self.nu, basis.T[i], c=cmap(i),
+                #          label=r'$F^{21}_{%d}$'%(i+1))
+                plt.plot(self.nu, basis[:, i], c=cmap(i),
                          label=r'$F^{21}_{%d}$'%(i+1))
             saveName = 'basis%s.pdf'%opt
         if opt == 'FG':
             lsty = ['-', '--', '-.', ':']*3
             for i in range(n_curves):
                 for j in range(self.nLST):
-                    plt.plot(self.nu, basis.T[i, j*len(self.nu):(j+1)*len(self.nu)],
+                    # plt.plot(self.nu, basis.T[i, j*len(self.nu):(j+1)*len(self.nu)],
+                    #          c=cmap(i), ls=lsty[j], label=r'$F^{\rm FG}_{%d\ (t_{%d})}$'%(i+1, j+1))
+                    plt.plot(self.nu, basis[j*len(self.nu):(j+1)*len(self.nu), i],
                              c=cmap(i), ls=lsty[j], label=r'$F^{\rm FG}_{%d\ (t_{%d})}$'%(i+1, j+1))
             saveName = 'basis%s%s.pdf'%(opt, self.getSaveName())
         plt.legend(fontsize=8.5, ncol=n_curves)
@@ -187,11 +196,12 @@ class Visual:
             cbar.set_label(r"$\delta^T C^{-1} \delta + 2 (n_b^{\rm FG} + n_b^{21})$")
         if quantity == 'BIC':
             cbar.set_label(r"$\delta^T C^{-1} \delta + (n_b^{\rm FG} + n_b^{21}) \log\, n_c$")
-        if self.save: plt.savefig('FigsOutput/%sGrid%s.pdf'%(quantity, self.getSaveName()),
+        if self.save: plt.savefig('FigsOutput/%s%sGrid%s%s.pdf'
+                                  %(self.prefix, quantity, self.getSaveName(), self.ind),
                                   bbox_inches='tight')
         else: plt.show()
 
-    def plotExtSignal(self, y21, recons21, sigma21):
+    def plotExtSignal(self, y21, recons21, sigma21, ylim=[-0.5, 0.15]):
         """Plots the extracted 21cm signal with the input signal.
 
         Args:
@@ -202,15 +212,17 @@ class Visual:
         plt.figure(figsize=(6, 4))
         plt.plot(self.nu, recons21[0:len(self.nu)], c='darkcyan',
                  label=r'$y_{21}^{\rm ext}$')
-        plt.fill_between(self.nu, recons21[0:len(self.nu)] - (1*sigma21),
-                        recons21[0:len(self.nu)] + (1*sigma21),
+        plt.fill_between(self.nu, recons21[0:len(self.nu)] - (0.4*sigma21),
+                        recons21[0:len(self.nu)] + (0.4*sigma21),
                         color="darkcyan", alpha=0.4)
         plt.plot(self.nu, y21, c='k', label=r'$y_{21}^{\rm inp}$')
         plt.legend()
         plt.xlim(50, 200)
+        plt.ylim(ylim)
         plt.xlabel(r'$\nu\ ({\rm MHz})$')
         plt.ylabel(r'$T_{\rm b}\ ({\rm K})$')
-        if self.save: plt.savefig('FigsOutput/extract21%s.pdf'%self.getSaveName(),
+        if self.save: plt.savefig('FigsOutput/%sextract21%s%s.pdf'
+                                  %(self.prefix, self.getSaveName(), self.ind),
                                   bbox_inches='tight')
         else: plt.show()
 
