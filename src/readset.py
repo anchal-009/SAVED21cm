@@ -93,7 +93,6 @@ class Modset:
         allInfo = []
         for _ in range(intBins):
             startTime = dateTimeVal.time()
-            print("Integrating time bin:", startTime)
             allInfo.append(np.load("%s/FgTs_%s_%s_30_%s_reg-%d_%s.npy"
                                 %(path, date, str(startTime), fgModel, numReg, antenna)))
             dateTimeVal = dateTimeVal + datetime.timedelta(minutes=intTime)
@@ -102,13 +101,36 @@ class Modset:
 
     def getcFgModsetGivenTime(self, path, date, numReg, fgModel, dateTimeList, intBins, antenna):
         ''' Concatenates the foreground ts given the initial time of dateTimeList '''
+        print('Modelling set: Reading FG modelling set...', end='', flush=True)
         allInfo = []
         for i in range(len(dateTimeList)):
             allInfo.append(self.getAvgGivenTime(path=path, date=date, numReg=numReg, fgModel=fgModel,
                                                 dateTimeVal=dateTimeList[i], intBins=intBins, antenna=antenna))
         concatenatedInfo = np.concatenate(allInfo, axis=1)
         concatenatedInfo = concatenatedInfo.T
+        print('Done!')
         return concatenatedInfo
+    
+    def getcFgModsetGivenTimeAnt(self, path, date, numReg, fgModel, dateTimeList, intBins, antenna):
+        ''' Concatenates the foreground ts given the initial time of dateTimeList '''
+        print('Modelling set: Reading FG modelling set...', end='', flush=True)
+        allInfoAnt = []
+        allInfo = []
+        for j in range(len(antenna)):
+            for i in range(len(dateTimeList)):
+                allInfo.append(self.getAvgGivenTime(path=path, date=date, numReg=numReg, fgModel=fgModel,
+                                                    dateTimeVal=dateTimeList[i], intBins=intBins, antenna=antenna[j]))
+            concatenatedInfo = np.concatenate(allInfo, axis=1)
+            del allInfo[:]
+            allInfoAnt.append(concatenatedInfo)
+        concatenatedInfoAnt = np.concatenate(allInfoAnt, axis=1)
+        concatenatedInfoAnt = concatenatedInfoAnt.T
+        print('Done!')
+        return concatenatedInfoAnt
+    
+    def concatenateModels(self, *models):
+        return np.concatenate(models)
+    
 
 class Inputs:
     """This class contains methods for getting the inputs (foreground and 21cm)
@@ -236,3 +258,6 @@ class Inputs:
         concatenatedInfo = np.concatenate(allInfo, axis=0)
         concatenatedInfo = concatenatedInfo.reshape(concatenatedInfo.shape[0], 1) - 2.725
         return concatenatedInfo
+    
+    def concatenateInputs(self, *inputs):
+        return np.concatenate((inputs), axis=0)
