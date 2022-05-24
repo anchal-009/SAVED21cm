@@ -226,7 +226,7 @@ class Visual:
                                   bbox_inches='tight')
         else: plt.show()
 
-    def plotBiasCDF(self, antNames, fnames, xlim=None, bins=5000, save=False):
+    def plotBiasCDF(self, antNames, fnames, xlim=None, ylim=[0, 1], ncol=2, bins=5000, save=False):
         """Plots the CDF of the signal bias for an ensemble of mockobs.
 
         Args:
@@ -236,7 +236,7 @@ class Visual:
             bins (list, optional): Number of bins. Defaults to 5000.
             save (bool, optional): For saving the figure. Defaults to False.
         """
-        plt.figure(figsize=(6, 4))
+        plt.figure(figsize=(6.5, 4.3))
         color = get_cmap(len(fnames))
         lim = [0.68, 0.95]
         text = self.getCDF(paths=fnames, ind=3, lim=lim, labels=antNames, color=color, bins=bins)
@@ -244,12 +244,12 @@ class Visual:
         self.plotChiCDF()
         plt.xlabel(r"${\rm Signal\ bias\ statistic\ }(\varepsilon)$")
         plt.ylabel(r"${\rm CDF}$")
-        plt.xlim(xlim); plt.ylim(0, 1)
-        plt.legend(loc='upper left', fontsize=9)
+        plt.xlim(xlim); plt.ylim(ylim)
+        plt.legend(loc='upper center', fontsize=8, ncol=ncol)
         if save: plt.savefig('FigsOutput/biasCDF_tbins-%d.pdf'%self.nLST, bbox_inches='tight')
         else: plt.show()
         
-    def plotRmsCDF(self, antNames, fnames, xlim=None, bins=5000, save=False):
+    def plotRmsCDF(self, antNames, fnames, xlim=None, ylim=[0, 1], ncol=2, bins=5000, save=False):
         """Plots the CDF of the rms uncertainty for an ensemble of mockobs.
 
         Args:
@@ -259,20 +259,20 @@ class Visual:
             bins (int, optional): Number of bins. Defaults to 5000.
             save (bool, optional): For saving the figure. Defaults to False.
         """
-        plt.figure(figsize=(6, 4))
+        plt.figure(figsize=(6.5, 4.3))
         color = get_cmap(len(fnames))
         lim = [0.68, 0.95]
         text = self.getCDF(paths=fnames, ind=5, lim=lim, labels=antNames, color=color, bins=bins)
         self.getTable(paths=fnames, labels=antNames, text=text, color=color)
         plt.xscale("log")
-        plt.ylim(0, 1); plt.xlim(xlim)
-        plt.legend(loc='upper left', fontsize=9)
+        plt.ylim(ylim); plt.xlim(xlim)
+        plt.legend(loc='upper center', fontsize=8, ncol=ncol)
         plt.xlabel(r"${\rm RMS\ uncertainity\ }({\rm mK})$")
         plt.ylabel(r"${\rm CDF}$")
         if save: plt.savefig('FigsOutput/rmsCDF_tbins-%d.pdf'%self.nLST, bbox_inches='tight')
         else: plt.show()
     
-    def plotNormD(self, antNames, fnames, xlim=None, bins=20, save=False):
+    def plotNormD(self, antNames, fnames, xlim=None, ylim=None, ncol=2, bins=20, save=False):
         """Plots the normalized Deviance for an ensemble of mockobs.
 
         Args:
@@ -283,7 +283,7 @@ class Visual:
             save (bool, optional): For saving the figure. Defaults to False.
             bins (int, optional): Number of bins. Defaults to 20.
         """
-        plt.figure(figsize=(6, 4))
+        plt.figure(figsize=(6.5, 4.3))
         color = get_cmap(len(fnames))
         labels = antNames
         paths = fnames
@@ -292,14 +292,44 @@ class Visual:
             weights = np.ones_like(f[:,4])/float(len(f[:,4]))
             plt.hist(f[:,4], weights=weights, bins=bins, histtype='step', label=labels[i],
                      color=color(i))
-        plt.xlim(xlim)
-        plt.legend(loc='best')
+        plt.xlim(xlim); plt.ylim(ylim)
+        plt.legend(loc='upper center', fontsize=8, ncol=ncol)
         plt.xlabel(r"$\chi^2$")
         plt.ylabel(r"${\rm PDF}$")
         plt.tight_layout()
         if save: plt.savefig('FigsOutput/normDevPDF_tbins-%d.pdf'%self.nLST, bbox_inches='tight')
         else: plt.show()
-    
+
+    def plotNormDnew(self, antNames, fnames, xlim=None, ylim=None, ncol=2, bins=20, save=False):
+        """Plots the normalized Deviance for an ensemble of mockobs.
+
+        Args:
+            antNames (list): Antennas
+            fnames (list): Files
+            xlim (list, optional): X-axis limits. Defaults to None.
+            bins (int, optional): Number of bins. Defaults to 20.
+            save (bool, optional): For saving the figure. Defaults to False.
+            bins (int, optional): Number of bins. Defaults to 20.
+        """
+        plt.figure(figsize=(6.5, 4.3))
+        color = get_cmap(len(fnames))
+        labels = antNames
+        paths = fnames
+        for i in range(len(paths)):
+            f = np.loadtxt("%s"%paths[i])
+            plt.hist(f[:, 4], density=True, bins=bins, histtype="step", label=labels[i],
+                     color=color(i))
+            # weights = np.ones_like(f[:,4])/float(len(f[:,4]))
+            # plt.hist(f[:,4], weights=weights, bins=bins, histtype='step', label=labels[i],
+            #          color=color(i))
+        plt.xlim(xlim); plt.ylim(ylim)
+        plt.legend(loc='upper center', fontsize=8, ncol=ncol)
+        plt.xlabel(r"$\chi^2$")
+        plt.ylabel(r"${\rm PDF}$")
+        plt.tight_layout()
+        if save: plt.savefig('FigsOutput/normDevPDF_tbins-%d.pdf'%self.nLST, bbox_inches='tight')
+        else: plt.show()    
+
     def plotModesDist(self, file, modesFg, modes21, contour=False, vmax=100,
                       nLevels=10, zoom=[None, None], save=False):
         """Plots the distribution of modes that minimize IC for an ensemble of inputs.
@@ -376,7 +406,7 @@ class Visual:
         the_table = plt.table(cellText=ct, colLabels=c_lab, cellLoc="center",
                               colWidths=[0.32, 0.1, 0.1], cellColours=cellcol, loc = 4)
         the_table.auto_set_font_size(False)
-        the_table.set_fontsize(9)
+        the_table.set_fontsize(8)
 
     @staticmethod
     def plotChiCDF():
