@@ -6,14 +6,14 @@ PATH21TS = '/Users/anchal/Documents/SourceCodes/SAVED21cm/data/TS21/lfcal_traini
 PATHFGTS = '/Users/anchal/Documents/SourceCodes/SAVED21cm/data/TSFG/Foreground-training-set-haslam-beta-const-'
 
 LST = 2     # Number of time bins
-ANT = ['logspiral']  # Antenna designs: 'dipole', 'logspiral', 'sinuous'
+ANT = ['dipole']  # Antenna designs: 'dipole', 'logspiral', 'sinuous'
 dNU = 1.    # Frequency channel width
 dT = 6      # Integration time in hour
 MODES_FG = 50     # Number of FG modes to search for min IC
 MODES_21 = 80     # Number of 21 modes to search for min IC
 QUANTITY = 'DIC'  # IC to minimize 'DIC' or 'BIC'
 VISUALS = True    # Option to plot figures
-SAVE = True      # Option to save figures
+SAVE = False      # Option to save figures
 FNAME = './%s_search.txt'%QUANTITY    # Filename of IC information
 
 def checkSettings():
